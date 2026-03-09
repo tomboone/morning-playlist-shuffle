@@ -14,7 +14,7 @@ Each evening, your iPhone prompts you to decide whether music plays the next mor
 
 | File | Purpose |
 |------|---------|
-| `morning-shuffle.conf` | All settings — playlist, time, device, volume, flag file path |
+| `morning-shuffle.conf.example` | Template config — copy to `morning-shuffle.conf` and fill in your values |
 | `morning-shuffle.sh` | Main script (reads conf, checks flag, plays music) |
 | `morning-shuffle-install.sh` | Generates launchd plist and pmset schedule from conf |
 
@@ -36,7 +36,8 @@ SwitchAudioSource -a
 
 ```bash
 mkdir -p ~/Scripts
-cp morning-shuffle.conf morning-shuffle.sh morning-shuffle-install.sh ~/Scripts/
+cp morning-shuffle.conf.example ~/Scripts/morning-shuffle.conf
+cp morning-shuffle.sh morning-shuffle-install.sh ~/Scripts/
 chmod +x ~/Scripts/morning-shuffle.sh ~/Scripts/morning-shuffle-install.sh
 ```
 
