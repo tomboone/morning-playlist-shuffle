@@ -34,7 +34,7 @@ else
     exit 0
 fi
 
-log "Playlist: $PLAYLIST_NAME | Device: $EQMAC_DEVICE | Volume: $VOLUME | System Volume: $SYSTEM_VOLUME"
+log "Playlist match: '$PLAYLIST_MATCH' | Device: $EQMAC_DEVICE | Volume: $VOLUME | System Volume: $SYSTEM_VOLUME"
 
 # 2. Wait for system services to settle after wake
 sleep 10
@@ -65,19 +65,41 @@ osascript -e "set volume output volume $SYSTEM_VOLUME"
 log "System volume set to: $SYSTEM_VOLUME"
 
 # 6. Shuffle and play the playlist via AppleScript
-osascript <<EOF
+# Uses "contains" matching to handle all playlist types (user, subscription)
+# and Unicode issues (e.g. curly quotes in Apple Music playlist names).
+# PLAYLIST_MATCH is comma-separated; all terms must match.
+
+# Build AppleScript "contains" conditions from comma-separated PLAYLIST_MATCH
+IFS=',' read -ra TERMS <<< "$PLAYLIST_MATCH"
+CONDITION=""
+for term in "${TERMS[@]}"; do
+    term=$(echo "$term" | xargs)  # trim whitespace
+    if [ -z "$CONDITION" ]; then
+        CONDITION="name of p contains \"$term\""
+    else
+        CONDITION="$CONDITION and name of p contains \"$term\""
+    fi
+done
+
+RESULT=$(osascript <<EOF
 tell application "Music"
-    set thePlaylist to playlist "$PLAYLIST_NAME"
-    set shuffle enabled to true
-    play thePlaylist
-    set sound volume to $VOLUME
+    repeat with p in (every playlist)
+        if $CONDITION then
+            set shuffle enabled to true
+            play p
+            set sound volume to $VOLUME
+            return "Playing: " & name of p
+        end if
+    end repeat
+    return "Not found"
 end tell
 EOF
+)
 
-if [ $? -eq 0 ]; then
-    log "Playlist '$PLAYLIST_NAME' is now playing (shuffled)."
+if [[ "$RESULT" == Playing* ]]; then
+    log "$RESULT"
 else
-    log "ERROR: AppleScript failed to play playlist '$PLAYLIST_NAME'."
+    log "ERROR: Playlist not found matching '$PLAYLIST_MATCH'."
 fi
 
 log "=== Morning Shuffle complete ==="

@@ -25,7 +25,7 @@ fi
 WAKE_TIME=$(printf "%02d:%02d:00" $WAKE_HOUR $WAKE_MINUTE)
 
 echo "=== Morning Shuffle Installer ==="
-echo "Playlist:   $PLAYLIST_NAME"
+echo "Playlist:   $PLAYLIST_MATCH"
 echo "Play time:  $(printf '%02d:%02d' $PLAY_HOUR $PLAY_MINUTE)"
 echo "Wake time:  $WAKE_TIME"
 echo "Device:     $EQMAC_DEVICE"

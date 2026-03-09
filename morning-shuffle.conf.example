@@ -1,12 +1,19 @@
 # Morning Shuffle Configuration
-# After changing values here, run: ~/Scripts/morning-shuffle-install.sh
+# Copy this file to morning-shuffle.conf and fill in your values.
+# After changing values, run: ~/Scripts/morning-shuffle-install.sh
 
-PLAYLIST_NAME="Your Playlist Name"
-EQMAC_DEVICE="eqMac"
+# Comma-separated keywords that together uniquely identify your playlist.
+# All keywords must match (using "contains" logic) against playlist names.
+# Examples:
+#   PLAYLIST_MATCH="My Morning Mix"         (single keyword, matches exactly one playlist)
+#   PLAYLIST_MATCH="Today,Indie Rock"       (two keywords, useful if the name has curly quotes)
+PLAYLIST_MATCH=""
+
+EQMAC_DEVICE=""
 PLAY_HOUR=8
 PLAY_MINUTE=30
-VOLUME=100
-SYSTEM_VOLUME=25
+VOLUME=40
+SYSTEM_VOLUME=50
 
 # iCloud Drive flag file path (do not change unless you also update the iPhone shortcut)
 FLAG_FILE="$HOME/Library/Mobile Documents/com~apple~CloudDocs/MorningShuffle/tomorrow.txt"

@@ -14,7 +14,7 @@ Each evening, your iPhone prompts you to decide whether music plays the next mor
 
 | File | Purpose |
 |------|---------|
-| `morning-shuffle.conf.example` | Template config — copy to `morning-shuffle.conf` and fill in your values |
+| `morning-shuffle.conf` | All settings — playlist, time, device, volume, flag file path |
 | `morning-shuffle.sh` | Main script (reads conf, checks flag, plays music) |
 | `morning-shuffle-install.sh` | Generates launchd plist and pmset schedule from conf |
 
@@ -36,8 +36,7 @@ SwitchAudioSource -a
 
 ```bash
 mkdir -p ~/Scripts
-cp morning-shuffle.conf.example ~/Scripts/morning-shuffle.conf
-cp morning-shuffle.sh morning-shuffle-install.sh ~/Scripts/
+cp morning-shuffle.conf morning-shuffle.sh morning-shuffle-install.sh ~/Scripts/
 chmod +x ~/Scripts/morning-shuffle.sh ~/Scripts/morning-shuffle-install.sh
 ```
 
@@ -45,7 +44,7 @@ chmod +x ~/Scripts/morning-shuffle.sh ~/Scripts/morning-shuffle-install.sh
 
 Open `~/Scripts/morning-shuffle.conf` and set:
 
-- `PLAYLIST_NAME` — exact name of your Apple Music playlist
+- `PLAYLIST_MATCH` — comma-separated keywords that together uniquely identify your playlist (e.g. `Today,Indie Rock`). All keywords must match using "contains" logic. This works for both user and subscription playlists, and avoids Unicode issues with curly quotes in Apple Music names. A single keyword works too (e.g. `My Morning Mix`).
 - `EQMAC_DEVICE` — device name from `SwitchAudioSource -a`
 - `PLAY_HOUR` and `PLAY_MINUTE` — when to start playback (default: 8:30)
 - `VOLUME` — playback volume, 0–100 (default: 40)
