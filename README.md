@@ -125,9 +125,11 @@ That's it — each weekday evening you'll get a notification, tap it, and choose
 
 ## How the flag works
 
-- If the flag file says `play` or `yes` → music plays
-- If the flag file says `skip` or `no` → script exits silently
+- If the flag file says `play` or `yes` → music plays, flag file is deleted
+- If the flag file says `skip` or `no` → script exits silently, flag file is deleted
 - If the flag file doesn't exist (e.g., you forgot to respond) → **music does not play by default**
+
+The flag file is always cleared after being read, so each morning starts fresh. If you miss the evening prompt, there's no leftover flag and the script defaults to skip.
 
 ## Changing the time (or anything else)
 

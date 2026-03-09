@@ -25,6 +25,8 @@ log "=== Morning Shuffle starting ==="
 if [ -f "$FLAG_FILE" ]; then
     FLAG=$(cat "$FLAG_FILE" | tr '[:upper:]' '[:lower:]' | xargs)
     log "Flag file found: '$FLAG'"
+    rm -f "$FLAG_FILE"
+    log "Flag file cleared."
     if [ "$FLAG" = "skip" ] || [ "$FLAG" = "no" ]; then
         log "Skipping today (flag=$FLAG). Exiting."
         exit 0
