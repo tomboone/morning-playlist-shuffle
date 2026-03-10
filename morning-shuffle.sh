@@ -23,12 +23,15 @@ log "=== Morning Shuffle starting ==="
 
 # 1. Check the iCloud Drive flag file
 if [ -f "$FLAG_FILE" ]; then
+    # Force iCloud to download the file (it may have been evicted to a 0-byte placeholder)
+    brctl download "$FLAG_FILE" 2>/dev/null
+    sleep 3
     FLAG=$(cat "$FLAG_FILE" | tr '[:upper:]' '[:lower:]' | xargs)
     log "Flag file found: '$FLAG'"
     rm -f "$FLAG_FILE"
     log "Flag file cleared."
-    if [ "$FLAG" = "skip" ] || [ "$FLAG" = "no" ]; then
-        log "Skipping today (flag=$FLAG). Exiting."
+    if [ "$FLAG" = "skip" ] || [ "$FLAG" = "no" ] || [ -z "$FLAG" ]; then
+        log "Skipping today (flag='$FLAG'). Exiting."
         exit 0
     fi
 else
@@ -38,8 +41,11 @@ fi
 
 log "Playlist match: '$PLAYLIST_MATCH' | Device: $EQMAC_DEVICE | Volume: $VOLUME | System Volume: $SYSTEM_VOLUME"
 
-# 2. Wait for system services to settle after wake
-sleep 10
+# 2. Launch Music.app and wait for system services to settle after wake.
+# Subscription playlists need Music.app fully connected to Apple Music servers.
+open -a Music
+log "Launched Music.app"
+sleep 20
 
 # 3. Set audio output to eqMac's virtual device
 if command -v SwitchAudioSource &> /dev/null; then
@@ -83,7 +89,12 @@ for term in "${TERMS[@]}"; do
     fi
 done
 
-RESULT=$(osascript <<EOF
+RESULT=""
+MAX_ATTEMPTS=5
+ATTEMPT=1
+
+while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+    RESULT=$(osascript <<EOF
 tell application "Music"
     repeat with p in (every playlist)
         if $CONDITION then
@@ -96,12 +107,20 @@ tell application "Music"
     return "Not found"
 end tell
 EOF
-)
+    )
 
-if [[ "$RESULT" == Playing* ]]; then
-    log "$RESULT"
-else
-    log "ERROR: Playlist not found matching '$PLAYLIST_MATCH'."
+    if [[ "$RESULT" == Playing* ]]; then
+        log "$RESULT"
+        break
+    fi
+
+    log "Attempt $ATTEMPT/$MAX_ATTEMPTS: Playlist not found. Retrying in 15s..."
+    ATTEMPT=$((ATTEMPT + 1))
+    sleep 15
+done
+
+if [[ "$RESULT" != Playing* ]]; then
+    log "ERROR: Playlist not found matching '$PLAYLIST_MATCH' after $MAX_ATTEMPTS attempts."
 fi
 
 log "=== Morning Shuffle complete ==="
