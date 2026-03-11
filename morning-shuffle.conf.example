@@ -16,4 +16,4 @@ VOLUME=40
 SYSTEM_VOLUME=50
 
 # iCloud Drive flag file path (do not change unless you also update the iPhone shortcut)
-FLAG_FILE="/Users/tomboone/Library/Mobile Documents/com~apple~CloudDocs/MorningShuffle/tomorrow.txt"
+FLAG_FILE="/Users/{your-user-name}/Library/Mobile Documents/com~apple~CloudDocs/MorningShuffle/tomorrow.txt"
