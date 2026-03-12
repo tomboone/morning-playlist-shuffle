@@ -15,5 +15,7 @@ PLAY_MINUTE=30
 VOLUME=40
 SYSTEM_VOLUME=50
 
-# iCloud Drive flag file path (do not change unless you also update the iPhone shortcut)
-FLAG_FILE="/Users/{your-user-name}/Library/Mobile Documents/com~apple~CloudDocs/MorningShuffle/tomorrow.txt"
+# iCloud Drive flag directory.
+# The iPhone shortcut saves play.flag or skip.flag here.
+# Use a hardcoded absolute path — launchd may not resolve $HOME reliably.
+FLAG_DIR="/Users/YOURUSERNAME/Library/Mobile Documents/com~apple~CloudDocs/MorningShuffle"

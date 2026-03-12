@@ -21,19 +21,20 @@ source "$CONF"
 
 log "=== Morning Shuffle starting ==="
 
-# 1. Check the iCloud Drive flag file
-if [ -f "$FLAG_FILE" ]; then
-    # Force iCloud to download the file (it may have been evicted to a 0-byte placeholder)
-    brctl download "$FLAG_FILE" 2>/dev/null
-    sleep 3
-    FLAG=$(cat "$FLAG_FILE" | tr '[:upper:]' '[:lower:]' | xargs)
-    log "Flag file found: '$FLAG'"
-    rm -f "$FLAG_FILE"
-    log "Flag file cleared."
-    if [ "$FLAG" = "skip" ] || [ "$FLAG" = "no" ] || [ -z "$FLAG" ]; then
-        log "Skipping today (flag='$FLAG'). Exiting."
-        exit 0
-    fi
+# 1. Check the iCloud Drive flag directory for play/skip signal.
+# Uses filenames (play.flag / skip.flag) instead of file content to avoid
+# iCloud sync issues where file content isn't available after wake.
+PLAY_FLAG="$FLAG_DIR/play.flag"
+SKIP_FLAG="$FLAG_DIR/skip.flag"
+
+if [ -f "$PLAY_FLAG" ]; then
+    log "Found play.flag — playing today."
+    rm -f "$PLAY_FLAG" "$SKIP_FLAG" 2>/dev/null
+    log "Flag files cleared."
+elif [ -f "$SKIP_FLAG" ]; then
+    log "Found skip.flag — skipping today."
+    rm -f "$PLAY_FLAG" "$SKIP_FLAG" 2>/dev/null
+    exit 0
 else
     log "No flag file found. Defaulting to skip."
     exit 0

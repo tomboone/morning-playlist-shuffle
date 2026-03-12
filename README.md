@@ -59,7 +59,7 @@ Open `~/Scripts/morning-shuffle.conf` and set:
 - `PLAY_HOUR` and `PLAY_MINUTE` — when to start playback (default: 8:30)
 - `VOLUME` — Music.app volume, 0–100
 - `SYSTEM_VOLUME` — macOS system volume, 0–100
-- `FLAG_FILE` — path to the iCloud Drive flag file. **Use a hardcoded absolute path** (e.g. `/Users/yourname/Library/...`) rather than `$HOME`, since launchd's environment may not resolve `$HOME` reliably.
+- `FLAG_DIR` — path to the iCloud Drive flag directory. **Use a hardcoded absolute path** (e.g. `/Users/yourname/Library/...`) rather than `$HOME`, since launchd's environment may not resolve `$HOME` reliably.
 
 ### 3. Set system sleep timer
 
@@ -113,13 +113,18 @@ Create a shortcut on your iPhone and set it to run as a nightly automation.
    - Add a **Save File** action:
      - Input: the Text action's output
      - Destination: `iCloud Drive > MorningShuffle`
-     - Sub Path: `tomorrow.txt`
+     - Sub Path: `play.flag`
      - Ask Where to Save: **OFF**
      - Overwrite If File Exists: **ON**
 
    **c. Under the "Skip" branch:**
    - Add a **Text** action, type: `skip`
-   - Add a **Save File** action (same settings as above)
+   - Add a **Save File** action:
+     - Input: the Text action's output
+     - Destination: `iCloud Drive > MorningShuffle`
+     - Sub Path: `skip.flag`
+     - Ask Where to Save: **OFF**
+     - Overwrite If File Exists: **ON**
 
 The full shortcut flow:
 
@@ -127,10 +132,10 @@ The full shortcut flow:
 Menu: "Play morning music tomorrow?"
 ├── Yes
 │   ├── Text: "play"
-│   └── Save File → iCloud Drive/MorningShuffle/tomorrow.txt
+│   └── Save File → iCloud Drive/MorningShuffle/play.flag
 └── Skip
     ├── Text: "skip"
-    └── Save File → iCloud Drive/MorningShuffle/tomorrow.txt
+    └── Save File → iCloud Drive/MorningShuffle/skip.flag
 ```
 
 ### Set Up the Automation
@@ -147,14 +152,13 @@ That's it — each weekday evening you'll get a notification, tap it, and choose
 
 ## How the flag works
 
-- If the flag file says `play` or `yes` → music plays, flag file is deleted
-- If the flag file says `skip` or `no` → script exits silently, flag file is deleted
-- If the flag file is empty → script exits silently, flag file is deleted
-- If the flag file doesn't exist (e.g., you forgot to respond) → **music does not play by default**
+- If `play.flag` exists → music plays, flag files are deleted
+- If `skip.flag` exists → script exits silently, flag files are deleted
+- If neither file exists (e.g., you forgot to respond) → **music does not play by default**
 
-The flag file is always cleared after being read, so each morning starts fresh. If you miss the evening prompt, there's no leftover flag and the script defaults to skip.
+The flag uses filenames rather than file content. This avoids iCloud sync issues where macOS evicts file content after wake, leaving a 0-byte placeholder that can't be read — but the filename is always intact regardless of sync state.
 
-The script uses `brctl download` to force iCloud to download the flag file before reading it, in case macOS has evicted the file content to save disk space.
+Flag files are always cleared after being read, so each morning starts fresh.
 
 ## How playlist matching works
 
@@ -186,10 +190,10 @@ The installer handles unloading the old schedule, generating a new plist, and up
 cat ~/.morning-shuffle.log
 ```
 
-**Check the current flag value:**
+**Check the current flag:**
 
 ```bash
-cat ~/Library/Mobile\ Documents/com~apple~CloudDocs/MorningShuffle/tomorrow.txt
+ls ~/Library/Mobile\ Documents/com~apple~CloudDocs/MorningShuffle/
 ```
 
 **Test manually:**
@@ -215,9 +219,10 @@ pmset -g sched
 - If it's very low (e.g. 1 minute), the Mac goes back to sleep before launchd fires
 - Fix with: `sudo pmset -c sleep 15`
 
-**Flag file reads as empty:**
-- macOS may have evicted the iCloud file content — the script now uses `brctl download` to handle this
+**Flag not detected:**
+- Run `ls ~/Library/Mobile\ Documents/com~apple~CloudDocs/MorningShuffle/` to see what files are present
 - Verify iCloud Drive is enabled and syncing on both devices
+- Check that the MorningShuffle folder exists in iCloud Drive on both devices
 - Hardcode the full path in your conf (don't use `$HOME`)
 
 **Playlist not found:**
